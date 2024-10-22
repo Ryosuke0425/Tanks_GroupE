@@ -30,7 +30,8 @@ namespace Complete
             m_EndWait = new WaitForSeconds (m_EndDelay);
 
             SpawnAllTanks();
-            SetCameraTargets();
+            //TPS課題:スタート時にカメラの対象を決める
+            SetCameraTarget();
 
             // Once the tanks have been created and the camera is using them as targets, start the game.
             StartCoroutine (GameLoop ());
@@ -51,21 +52,28 @@ namespace Complete
         }
 
 
-        private void SetCameraTargets()
+        //TPS課題:カメラを一人のユーザーに向けるメソッド
+        private void SetCameraTarget()
         {
-            // Create a collection of transforms the same size as the number of tanks.
-            Transform[] targets = new Transform[m_Tanks.Length];
-
-            // For each of these transforms...
-            for (int i = 0; i < targets.Length; i++)
-            {
-                // ... set it to the appropriate tank transform.
-                targets[i] = m_Tanks[i].m_Instance.transform;
-            }
-
-            // These are the targets the camera should follow.
-            m_CameraControl.m_Targets = targets;
+            Transform target = m_Tanks[0].m_Instance.transform;
+            m_CameraControl.m_Target = target;
         }
+//TPS課題:不要になった
+//        private void SetCameraTargets()
+//        {
+//            // Create a collection of transforms the same size as the number of tanks.
+//            Transform[] targets = new Transform[m_Tanks.Length];
+//
+//            // For each of these transforms...
+//            for (int i = 0; i < targets.Length; i++)
+//            {
+//                // ... set it to the appropriate tank transform.
+//                targets[i] = m_Tanks[i].m_Instance.transform;
+//            }
+//
+//            // These are the targets the camera should follow.
+//            m_CameraControl.m_Targets = targets;
+//        }
 
 
         // This is called from start and will run each phase of the game one after another.
@@ -102,7 +110,7 @@ namespace Complete
             DisableTankControl ();
 
             // Snap the camera's zoom and position to something appropriate for the reset tanks.
-            m_CameraControl.SetStartPositionAndSize ();
+            //m_CameraControl.SetStartPositionAndSize (); //TPS課題:不要になった
 
             // Increment the round number and display text showing the players what round it is.
             m_RoundNumber++;
