@@ -79,7 +79,9 @@ namespace Complete
             m_MovementInputValue = Input.GetAxis(m_MovementAxisName);
             m_TurnInputValue = Input.GetAxis(m_TurnAxisName);
 
-            // 砲塔の回転処理
+        // 砲塔の回転処理
+        if (m_PlayerNumber == 1)
+        {
             if (Input.GetKey(KeyCode.Q))
             {
                 turret.Rotate(Vector3.up, -turretRotationSpeed * Time.deltaTime);
@@ -88,6 +90,19 @@ namespace Complete
             {
                 turret.Rotate(Vector3.up, turretRotationSpeed * Time.deltaTime);
             }
+        }
+        else if (m_PlayerNumber == 2) // 2プレイヤー目のタンク
+        {
+            if (Input.GetKey(KeyCode.Comma)) // ','キー
+            {
+                turret.Rotate(Vector3.up, -turretRotationSpeed * Time.deltaTime);
+            }
+            if (Input.GetKey(KeyCode.Period)) // '.'キー
+            {
+                turret.Rotate(Vector3.up, turretRotationSpeed * Time.deltaTime);
+            }
+        }
+
 
             EngineAudio();
         }
