@@ -1,6 +1,6 @@
 ﻿using System;
 using UnityEngine;
-
+using Complete;
 namespace Complete
 {
     [Serializable]
@@ -23,7 +23,19 @@ namespace Complete
         private TankShooting m_Shooting;                        // Reference to tank's shooting script, used to disable and enable control.
         private GameObject m_CanvasGameObject;                  // Used to disable the world space UI during the Starting and Ending phases of each round.
 
+        public event Action<int, int> OnWeaponStockChanged;   　//HudManagerがリスナー
 
+        private void HandleShellStockChanged(int shellStock)
+        {
+            OnWeaponStockChanged?.Invoke(m_PlayerNumber, shellStock);
+        }
+        private void OnDisable()
+        {
+            if (m_Shooting != null)
+            {
+                m_Shooting.OnShellStockChanged -= HandleShellStockChanged;
+            }
+        }
         public void Setup ()
         {
             // Get references to the components.
@@ -46,6 +58,11 @@ namespace Complete
             {
                 // ... set their material color to the color specific to this tank.
                 renderers[i].material.color = m_PlayerColor;
+            }
+
+            if (m_Shooting != null)//すべてのセッティングが終わってからでないとダメなのでこの位置
+            {
+                m_Shooting.OnShellStockChanged += HandleShellStockChanged; //OnshellStockChangedへのリスナーの登録
             }
         }
 
