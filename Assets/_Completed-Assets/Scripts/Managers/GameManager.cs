@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -11,10 +13,10 @@ namespace Complete
         public float m_StartDelay = 3f;             // The delay between the start of RoundStarting and RoundPlaying phases.
         public float m_EndDelay = 3f;               // The delay between the end of RoundPlaying and RoundEnding phases.
         public CameraControl m_CameraControl;       // Reference to the CameraControl script for control during different phases.
+        public Minimap m_Minimap;                   //1-6,カメラの対象
         public Text m_MessageText;                  // Reference to the overlay Text to display winning text, etc.
         public GameObject m_TankPrefab;             // Reference to the prefab the players will control.
         public TankManager[] m_Tanks;               // A collection of managers for enabling and disabling different aspects of the tanks.
-
         
         private int m_RoundNumber;                  // Which round the game is currently on.
         private WaitForSeconds m_StartWait;         // Used to have a delay whilst the round starts.
@@ -22,7 +24,23 @@ namespace Complete
         private TankManager m_RoundWinner;          // Reference to the winner of the current round.  Used to make an announcement of who won.
         private TankManager m_GameWinner;           // Reference to the winner of the game.  Used to make an announcement of who won.
 
+        public enum GameState
+        { 
+            RoundStarting,
+            RoundPlaying,
+            RoundEnding
+        }
+        public GameState Current_GameState;
+        public event Action<GameState> OnGameStateChanged;
 
+        private void SetGameState(GameState newGameState)
+        {
+            if (Current_GameState != newGameState)
+            {
+                Current_GameState = newGameState;
+                OnGameStateChanged?.Invoke(Current_GameState);
+            }
+        }
         private void Start()
         {
             // Create the delays so they only have to be made once.
@@ -30,7 +48,7 @@ namespace Complete
             m_EndWait = new WaitForSeconds (m_EndDelay);
 
             SpawnAllTanks();
-            //TPS課題:スタート時にカメラの対象を決める
+            //TPS課題,MiniMap課題 :スタート時にカメラの対象を決める
             SetCameraTarget();
 
             // Once the tanks have been created and the camera is using them as targets, start the game.
@@ -52,11 +70,12 @@ namespace Complete
         }
 
 
-        //TPS課題:カメラを一人のユーザーに向けるメソッド
+        //TPS課題,MiniMap課題:カメラを一人のユーザーに向けるメソッド
         private void SetCameraTarget()
         {
-            Transform target = m_Tanks[0].m_Instance.transform;
-            m_CameraControl.m_Target = target;
+            Transform target = m_Tanks[0].m_Instance.transform;         //TPS,ミニマップ:カメラ対象のユーザーを決める
+            m_CameraControl.m_Target = target;                          //TPS:メインカメラをユーザーに向ける
+            m_Minimap.m_Target = target;                                //ミニマップカメラをユーザーに向ける
         }
 //TPS課題:不要になった
 //        private void SetCameraTargets()
@@ -105,6 +124,7 @@ namespace Complete
 
         private IEnumerator RoundStarting ()
         {
+            SetGameState(GameState.RoundStarting);
             // As soon as the round starts reset the tanks and make sure they can't move.
             ResetAllTanks ();
             DisableTankControl ();
@@ -123,6 +143,7 @@ namespace Complete
 
         private IEnumerator RoundPlaying ()
         {
+            SetGameState(GameState.RoundPlaying);
             // As soon as the round begins playing let the players control the tanks.
             EnableTankControl ();
 
@@ -140,6 +161,7 @@ namespace Complete
 
         private IEnumerator RoundEnding ()
         {
+            SetGameState(GameState.RoundEnding);
             // Stop tanks from moving.
             DisableTankControl ();
 
