@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -22,7 +23,23 @@ namespace Complete
         private TankManager m_RoundWinner;          // Reference to the winner of the current round.  Used to make an announcement of who won.
         private TankManager m_GameWinner;           // Reference to the winner of the game.  Used to make an announcement of who won.
 
+        public enum GameState
+        { 
+            RoundStarting,
+            RoundPlaying,
+            RoundEnding
+        }
+        public GameState Current_GameState;
+        public event Action<GameState> OnGameStateChanged;
 
+        private void SetGameState(GameState newGameState)
+        {
+            if (Current_GameState != newGameState)
+            {
+                Current_GameState = newGameState;
+                OnGameStateChanged?.Invoke(Current_GameState);
+            }
+        }
         private void Start()
         {
             // Create the delays so they only have to be made once.
@@ -105,6 +122,7 @@ namespace Complete
 
         private IEnumerator RoundStarting ()
         {
+            SetGameState(GameState.RoundStarting);
             // As soon as the round starts reset the tanks and make sure they can't move.
             ResetAllTanks ();
             DisableTankControl ();
@@ -123,6 +141,7 @@ namespace Complete
 
         private IEnumerator RoundPlaying ()
         {
+            SetGameState(GameState.RoundPlaying);
             // As soon as the round begins playing let the players control the tanks.
             EnableTankControl ();
 
@@ -140,6 +159,7 @@ namespace Complete
 
         private IEnumerator RoundEnding ()
         {
+            SetGameState(GameState.RoundEnding);
             // Stop tanks from moving.
             DisableTankControl ();
 
