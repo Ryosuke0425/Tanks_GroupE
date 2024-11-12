@@ -23,7 +23,9 @@ namespace Complete
         private float m_ChargeSpeed;                // How fast the launch force increases, based on the max charge time.
         private bool m_Fired;                       // Whether or not the shell has been launched with this button press.
         
-        private int m_Bullets_start_hold;　         //1-3追加
+
+        private int m_Bullets_start_hold;         //1-3追加
+
         private int m_Bullets_hold;
         private int m_Bullets_max_hold = 50;
         private int m_Bullets_supply = 10;
@@ -165,13 +167,18 @@ namespace Complete
             m_Bullets_hold -= 1;
             OnShellStockChanged?.Invoke(m_Bullets_hold);
 
-            // Debugging to check for null references
-            if (m_Shell == null) Debug.LogError("Shell is null");
-            if (m_FireTransform == null) Debug.LogError("FireTransform is null");
-            if (turret == null) Debug.LogError("Turret is null");
 
-            // 砲弾をturretの先端からさらに前方に位置調整
-            Vector3 firePosition = m_FireTransform.position + new Vector3(0, 0.85f, 0); // y方向に少し上に
+public void Fire()
+{
+    m_Fired = true;
+
+    // Debugging to check for null references
+    if (m_Shell == null) Debug.LogError("Shell is null");
+    if (m_FireTransform == null) Debug.LogError("FireTransform is null");
+    if (turret == null) Debug.LogError("Turret is null");
+            // 砲弾の発射位置をturretの位置と回転を基準に設定
+            Vector3 firePosition = turret.position + turret.forward * 0.85f;
+
             Rigidbody shellInstance = Instantiate(m_Shell, firePosition, turret.rotation) as Rigidbody;
 
             shellInstance.velocity = m_CurrentLaunchForce * turret.forward;
