@@ -97,21 +97,10 @@ namespace Complete
             m_AimSlider.transform.rotation = turret.rotation * Quaternion.Euler(90, 0, 0);  // 砲塔の回転に合わせて矢印を表示
 
             // The slider should have a default value of the minimum launch force.
-            m_AimSlider.value = m_MinLaunchForce;
+            //m_AimSlider.value = m_MinLaunchForce;
             if (m_Bullets_hold > 0)
             {
-                if (m_CurrentLaunchForce >= m_MaxLaunchForce && !m_Fired)
-                {
-                    m_CurrentLaunchForce = m_MaxLaunchForce;//力が最大になった放出
-                    //Fire();
-                    isIncreasing = false;
-                }
-                else if (m_CurrentLaunchForce < m_MinLaunchForce && !m_Fired)
-                {
-                    m_CurrentLaunchForce = m_MinLaunchForce;
-                    isIncreasing = true;
-                }
-                else if (Input.GetButtonDown(m_FireButton))
+                if (Input.GetButtonDown(m_FireButton))
                 {
                     m_Fired = false;
                     m_CurrentLaunchForce = m_MinLaunchForce;//ボタンが押された時は最小値を与える
@@ -124,29 +113,27 @@ namespace Complete
                     if (isIncreasing == true)
                     {
                         m_CurrentLaunchForce += m_ChargeSpeed * Time.deltaTime;//押されている最中は力も大きくなる
-                        m_AimSlider.value = m_CurrentLaunchForce;
                         if (m_CurrentLaunchForce >= m_MaxLaunchForce)
                         {
-                            m_CurrentLaunchForce = m_MinLaunchForce;
+                            m_CurrentLaunchForce = m_MaxLaunchForce;
                             isIncreasing = false;
                         }
                     }
                     else if (isIncreasing == false)
                     {
                         m_CurrentLaunchForce -= m_ChargeSpeed * Time.deltaTime;
-                        m_AimSlider.value = m_CurrentLaunchForce;
                         if (m_CurrentLaunchForce <= m_MinLaunchForce)
                         {
                             m_CurrentLaunchForce = m_MinLaunchForce;
                             isIncreasing = true;
                         }
                     }
-                    //m_AimSlider.value = m_CurrentLaunchForce;
+                    m_AimSlider.value = m_CurrentLaunchForce;
                 }
                 else if (Input.GetButtonUp(m_FireButton) && !m_Fired)
                 {
                     Fire();
-                    
+                    m_AimSlider.value = m_MinLaunchForce;
                 }
             }
 
