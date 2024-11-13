@@ -163,22 +163,16 @@ namespace Complete
 
         public void Fire()
         {
-            m_Fired = true;                                     //1-3追加箇所
+            m_Fired = true;
             m_Bullets_hold -= 1;
             OnShellStockChanged?.Invoke(m_Bullets_hold);
-
-
-public void Fire()
-{
-    m_Fired = true;
-
-    // Debugging to check for null references
-    if (m_Shell == null) Debug.LogError("Shell is null");
-    if (m_FireTransform == null) Debug.LogError("FireTransform is null");
-    if (turret == null) Debug.LogError("Turret is null");
+                // Debugging to check for null references
+            if (m_Shell == null) Debug.LogError("Shell is null");
+            if (m_FireTransform == null) Debug.LogError("FireTransform is null");
+            if (turret == null) Debug.LogError("Turret is null");
             // 砲弾の発射位置をturretの位置と回転を基準に設定
-            Vector3 firePosition = turret.position + turret.forward * 0.85f;
-
+            //Vector3 firePosition = turret.position + turret.forward * 0.85f;
+            Vector3 firePosition = m_FireTransform.position + new Vector3(0, 0.85f, 0); // y方向に少し上に
             Rigidbody shellInstance = Instantiate(m_Shell, firePosition, turret.rotation) as Rigidbody;
 
             shellInstance.velocity = m_CurrentLaunchForce * turret.forward;

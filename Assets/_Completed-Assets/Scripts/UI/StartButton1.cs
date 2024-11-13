@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-public class StartButton : MonoBehaviour
+public class StartButton1 : MonoBehaviour
 {
     [SerializeField]
     private Button Button;
