@@ -11,7 +11,7 @@ namespace Complete
     {
         public int m_NumRoundsToWin = 5;            // The number of rounds a single player has to win to win the game.
         public float m_StartDelay = 3f;             // The delay between the start of RoundStarting and RoundPlaying phases.
-        public float m_EndDelay = 3f;               // The delay between the end of RoundPlaying and RoundEnding phases.
+        public float m_EndDelay = 5f;               // The delay between the end of RoundPlaying and RoundEnding phases.
         public CameraControl m_CameraControl;       // Reference to the CameraControl script for control during different phases.
         public Minimap m_Minimap;                   //1-6,カメラの対象
         public Text m_MessageText;                  // Reference to the overlay Text to display winning text, etc.
@@ -33,6 +33,8 @@ namespace Complete
         public GameState Current_GameState;
         public event Action<GameState> OnGameStateChanged;
 
+        [SerializeField] private Button closeButton;//ダイアログのクローズボタン、パネルオブジェクトの下に配置
+        [SerializeField] private GameObject userwinDialog;//ダイアログ、Panelオブジェクト
         private void SetGameState(GameState newGameState)
         {
             if (Current_GameState != newGameState)
@@ -43,6 +45,8 @@ namespace Complete
         }
         private void Start()
         {
+            userwinDialog.SetActive(false);
+            closeButton.onClick.AddListener(CloseWinDialog);
             // Create the delays so they only have to be made once.
             m_StartWait = new WaitForSeconds (m_StartDelay);
             m_EndWait = new WaitForSeconds (m_EndDelay);
@@ -54,7 +58,11 @@ namespace Complete
             // Once the tanks have been created and the camera is using them as targets, start the game.
             StartCoroutine (GameLoop ());
         }
-
+        private void CloseWinDialog()
+        {
+            userwinDialog.SetActive(false);
+            SceneManager.LoadScene(SceneNames.TitleScene);
+        }
 
         private void SpawnAllTanks()
         {
@@ -111,7 +119,8 @@ namespace Complete
             if (m_GameWinner != null)
             {
                 // If there is a game winner, restart the level.
-                SceneManager.LoadScene (SceneNames.TitleScene);
+                userwinDialog.SetActive(true);
+                //SceneManager.LoadScene (SceneNames.TitleScene);
             }
             else
             {
@@ -181,7 +190,8 @@ namespace Complete
             // Get a message based on the scores and whether or not there is a game winner and display it.
             string message = EndMessage ();
             m_MessageText.text = message;
-
+            //この部分にダイアログの処理を書く
+            //userwinDialog.SetActive(true);
             // Wait for the specified length of time until yielding control back to the game loop.
             yield return m_EndWait;
         }
