@@ -136,7 +136,7 @@ namespace Complete
                     m_AimSlider.value = m_MinLaunchForce;
                 }
             }
-
+            /*
             if (m_Bullets_hold > 0)
             {
                 Debug.Log(m_Bullets_hold);
@@ -145,7 +145,7 @@ namespace Complete
             {
                 Debug.Log("砲弾なし");
             }
-            
+            */
         }
 
         public void Fire()
