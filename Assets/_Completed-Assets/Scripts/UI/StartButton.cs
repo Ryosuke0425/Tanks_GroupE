@@ -21,12 +21,13 @@ public class ResponseData
     public string user_id;
     public string error;
 }
+
 public class StartButton : MonoBehaviour
 {
     private WebSocket ws;
     private string userId;
     private string user_Name = "NoName";
-    [SerializeField] private TextMeshProUGUI user_ID;//左上のTextMeshProに表示したい内容を保持するため
+    [SerializeField] private TextMeshProUGUI user_ID_show;//左上のTextMeshProに表示したい内容を保持するため
     //[SerializeField] private TMP_InputField usernameInputField;//ユーザ名を入力を保持するための
     [SerializeField] private Button Button;
     private bool isMessageReceived = false;
@@ -39,7 +40,7 @@ public class StartButton : MonoBehaviour
         ws.OnError += OnError;
         ws.Connect();
 
-        //PlayerPrefs.DeleteAll();//createuserの挙動を確認するときに使用する
+        //PlayerPrefs.DeleteAll();//create userの挙動を確認するときに使用する
         //PlayerPrefs.Save();
 
         // 前回保存したユーザーIDをロード
@@ -118,11 +119,11 @@ public class StartButton : MonoBehaviour
 
     private void DisplayUserId(string userId)//すでにログインしていた場合
     {
-        if (user_ID != null)
+        if (user_ID_show != null)
         {
             // タイトル画面のUIにユーザーIDを表示する処理を追加
             Debug.Log("OK DisplayUserID: " + userId);
-            this.user_ID.text = "UserID:" + userId;//userIdを画面上のTextMeshProに表示、うまくできてない
+            this.user_ID_show.text = "UserID:" + userId;//userIdを画面上のTextMeshProに表示、うまくできてない
         }
         else
         {

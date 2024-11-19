@@ -57,7 +57,14 @@ public class UserRegistrationButton : MonoBehaviour
             Debug.LogError("Exception details: " + e.Exception.ToString());
         }
     }
-        private void OpenUsernameDialog()
+    void OnDestroy()
+    {
+        if (ws != null && ws.IsAlive)
+        {
+            ws.Close(); // Closeフレームを送信して適切に切断
+        }
+    }
+    private void OpenUsernameDialog()
     {
         usernameDialog.SetActive(true);
         usernameInputField.text = currentUsername; // 現在のユーザー名をフィールドに表示
@@ -81,6 +88,7 @@ public class UserRegistrationButton : MonoBehaviour
         else
         {
             Debug.LogWarning("ユーザー名は3～15文字の範囲で入力してください。また記号は使わないでください");
+            displayedUsername.text = "ユーザー名は3～15文字の範囲で入力してください。\nまた記号は使わないでください";
         }
     }
     private bool IsValidUsername(string input)
