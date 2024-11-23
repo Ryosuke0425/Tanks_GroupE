@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-
+using System;
 namespace Complete
 {
     public class TankHealth : MonoBehaviour
@@ -11,7 +11,8 @@ namespace Complete
         public Color m_FullHealthColor = Color.green;       // The color the health bar will be when on full health.
         public Color m_ZeroHealthColor = Color.red;         // The color the health bar will be when on no health.
         public GameObject m_ExplosionPrefab;                // A prefab that will be instantiated in Awake, then used whenever the tank dies.
-        
+        public Text m_CurrentHealthDisplay;                 //HUD:画面上の残りHPを表示,数字
+        public Slider[] hpSlider = new Slider[2];           //HUD:HPゲージ
         
         private AudioSource m_ExplosionAudio;               // The audio source to play when the tank explodes.
         private ParticleSystem m_ExplosionParticles;        // The particle system the will play when the tank is destroyed.
@@ -50,6 +51,17 @@ namespace Complete
 
             // Change the UI elements appropriately.
             SetHealthUI ();
+            //HUD:ダメージ時にHP表示を更新する.
+            if (m_CurrentHealth <= 0)
+            {
+                m_CurrentHealthDisplay.text = "HP:0";
+            }
+            else
+            {
+                m_CurrentHealthDisplay.text = "HP:" + Mathf.CeilToInt(m_CurrentHealth).ToString();
+            }
+            hpSlider[0].value = Math.Max(0, (m_CurrentHealth - 100.0f) / 100.0f);
+            hpSlider[1].value = m_CurrentHealth / 100.0f;
 
             // If the current health is at or below zero and it has not yet been registered, call OnDeath.
             if (m_CurrentHealth <= 0f && !m_Dead)

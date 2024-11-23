@@ -73,7 +73,7 @@ public class StartButton : MonoBehaviour
 
     private void CreateNewUser()//データを送る操作
     {
-        user_Name = "Player" + Random.Range(1, 10000);
+        //user_Name = "Player" + Random.Range(1, 10000);
         //string username = string.IsNullOrEmpty(usernameInputField.text) ? "Player" + Random.Range(1, 10000) : usernameInputField.text;//下のusernameに入れる
         var createUserData = new CreateUserData{ type = "create_user", username = user_Name };//typeを指定してあげる事でサーバでの処理の分岐に役立つ、CreateUserDataクラスの属性すべてが送信される
         Debug.Log("success create user:"+createUserData);
