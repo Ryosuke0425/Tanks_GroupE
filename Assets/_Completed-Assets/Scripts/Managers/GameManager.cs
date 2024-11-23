@@ -18,6 +18,7 @@ namespace Complete
         public CameraControl m_CameraControl;       // Reference to the CameraControl script for control during different phases.
         public Minimap m_Minimap;                   //1-6,カメラの対象
         public Text m_MessageText;                  // Reference to the overlay Text to display winning text, etc.
+        public Text[] numWin;                       //HUD:ラウンドの勝利数の表示
         public GameObject m_TankPrefab;             // Reference to the prefab the players will control.
         public TankManager[] m_Tanks;               // A collection of managers for enabling and disabling different aspects of the tanks.
         
@@ -196,6 +197,19 @@ namespace Complete
                 m_Tanks[i].m_Instance =
                     Instantiate(m_TankPrefab, m_Tanks[i].m_SpawnPoint.position, m_Tanks[i].m_SpawnPoint.rotation) as GameObject;
                 m_Tanks[i].m_PlayerNumber = i + 1;
+                //HUD:戦車を出現させるときにどの戦車がどのHP表示と対応させるかを決める
+                if (i == 0)
+                {
+                    m_Tanks[i].m_Instance.GetComponent<TankHealth>().m_CurrentHealthDisplay = GameObject.Find("YourHP").GetComponent<Text>();
+                    m_Tanks[i].m_Instance.GetComponent<TankHealth>().hpSlider[0] = GameObject.Find("YourHP1").GetComponent<Slider>();
+                    m_Tanks[i].m_Instance.GetComponent<TankHealth>().hpSlider[1] = GameObject.Find("YourHP2").GetComponent<Slider>();
+                }
+                else
+                {
+                    m_Tanks[i].m_Instance.GetComponent<TankHealth>().m_CurrentHealthDisplay = GameObject.Find("EnemyHP").GetComponent<Text>();
+                    m_Tanks[i].m_Instance.GetComponent<TankHealth>().hpSlider[0] = GameObject.Find("EnemyHP1").GetComponent<Slider>();
+                    m_Tanks[i].m_Instance.GetComponent<TankHealth>().hpSlider[1] = GameObject.Find("EnemyHP2").GetComponent<Slider>();
+                }
                 m_Tanks[i].Setup();
             }
         }
@@ -269,6 +283,11 @@ namespace Complete
             m_RoundNumber++;
             m_MessageText.text = "ROUND " + m_RoundNumber;
 
+            //HUD:ラウンドが始まる時にHP表示を元に戻す
+            m_Tanks[0].m_Instance.GetComponent<TankHealth>().m_CurrentHealthDisplay.text = "HP:100";
+            m_Tanks[1].m_Instance.GetComponent<TankHealth>().m_CurrentHealthDisplay.text = "HP:100";
+            m_Tanks[0].m_Instance.GetComponent<TankHealth>().hpSlider[1].value = 1.0f;
+            m_Tanks[1].m_Instance.GetComponent<TankHealth>().hpSlider[1].value = 1.0f;
             // Wait for the specified length of time until yielding control back to the game loop.
             yield return m_StartWait;
         }
@@ -307,7 +326,9 @@ namespace Complete
             // If there is a winner, increment their score.
             if (m_RoundWinner != null)
                 m_RoundWinner.m_Wins++;
-
+            //HUD:ラウンド終了時に画面上の勝利数更新
+            numWin[0].text = "Win:" + m_Tanks[0].m_Wins.ToString();
+            numWin[1].text = "Win:" + m_Tanks[1].m_Wins.ToString();
             // Now the winner's score has been incremented, see if someone has one the game.
             m_GameWinner = GetGameWinner ();
 
@@ -323,14 +344,15 @@ namespace Complete
             {
                 //for (int i = 0; i < m_Tanks.Length; i++)
                 //{
-                if (m_GameWinner == m_Tanks[0])
-                {
-                    Update_Win();
-                }
-                else
-                {
-                    Update_Lose();
-                }
+                    Debug.Log("OK:" + m_Tanks[0]);//自身が更新される状態にしているのでfalseになったときにupdateloseが呼ばれることになる
+                    if (m_Tanks[0] == m_GameWinner)//tankは接続順に0,1..で管理しているので、
+                    {
+                        Update_Win();
+                    }
+                    else
+                    {
+                        Update_Lose();
+                    }
                 //}
             }
         }
