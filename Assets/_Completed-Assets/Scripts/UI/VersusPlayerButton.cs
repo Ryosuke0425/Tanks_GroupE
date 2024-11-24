@@ -7,8 +7,16 @@ public class VersusPlayerButton : MonoBehaviour
 {
     [SerializeField]
     private Button Button;
+    public StaminaManager staminaManager;
+    public GameObject noStaminaPanel;
+
     void Onclicked()
     {
+        bool success = staminaManager.UseStamina();
+        if(!success){
+            noStaminaPanel.SetActive(true);
+            return;
+        }
         SceneManager.LoadScene(SceneNames.CompleteGameScene);
     }
     // Start is called before the first frame update
