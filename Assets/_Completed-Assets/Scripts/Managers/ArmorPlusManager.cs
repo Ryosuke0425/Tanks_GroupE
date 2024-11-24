@@ -39,4 +39,9 @@ public class ArmorPlusManager : MonoBehaviour
         }
         return false;
     }
+
+    public void CompleteUseArmorPlus(){
+        armorPlus.used = false;
+        armorStateDisplay.text = "Armor Normal";
+    }
 }

@@ -21,6 +21,7 @@ namespace Complete
         public Text[] numWin;                       //HUD:ラウンドの勝利数の表示
         public GameObject m_TankPrefab;             // Reference to the prefab the players will control.
         public TankManager[] m_Tanks;               // A collection of managers for enabling and disabling different aspects of the tanks.
+        public ArmorPlusManager armorPlusManager;   //アイテム課題:ゲーム開始時にプレイヤーのArmorPlus使用状況を確認する
         
         private int m_RoundNumber;                  // Which round the game is currently on.
         private WaitForSeconds m_StartWait;         // Used to have a delay whilst the round starts.
@@ -47,6 +48,7 @@ namespace Complete
         private string win_Rate;
         private string my_pre_Rank;
         private string my_current_Rank;
+        private float floatArmorPlus = 1f;         //アイテム課題:ArmorPlusの使用状況・1(未使用),2(使用中)
 
         private bool show_text = false;//メインスレッドで処理するために使う変数
         private string currentUsername;
@@ -104,6 +106,11 @@ namespace Complete
             m_StartWait = new WaitForSeconds (m_StartDelay);
             m_EndWait = new WaitForSeconds (m_EndDelay);
 
+            //アイテム課題
+            GameObject armorPlusManagerObject = GameObject.Find("ArmorPlusManager");
+            if(armorPlusManagerObject != null){
+                armorPlusManager = armorPlusManagerObject.GetComponent<ArmorPlusManager>(); //アイテム課題
+            }
             SpawnAllTanks();
             //TPS課題,MiniMap課題 :スタート時にカメラの対象を決める
             SetCameraTarget();
@@ -203,6 +210,13 @@ namespace Complete
                     m_Tanks[i].m_Instance.GetComponent<TankHealth>().m_CurrentHealthDisplay = GameObject.Find("YourHP").GetComponent<Text>();
                     m_Tanks[i].m_Instance.GetComponent<TankHealth>().hpSlider[0] = GameObject.Find("YourHP1").GetComponent<Slider>();
                     m_Tanks[i].m_Instance.GetComponent<TankHealth>().hpSlider[1] = GameObject.Find("YourHP2").GetComponent<Slider>();
+                    //アイテム課題:ArmorPlus使用しているなら対象オブジェクトのHPを2倍にする
+                    if(armorPlusManager != null){
+                        if(armorPlusManager.armorPlus.used){
+                            m_Tanks[i].m_Instance.GetComponent<TankHealth>().m_StartingHealth = 200.0f;
+                            floatArmorPlus = 2f;
+                        }
+                    }
                 }
                 else
                 {
@@ -284,8 +298,9 @@ namespace Complete
             m_MessageText.text = "ROUND " + m_RoundNumber;
 
             //HUD:ラウンドが始まる時にHP表示を元に戻す
-            m_Tanks[0].m_Instance.GetComponent<TankHealth>().m_CurrentHealthDisplay.text = "HP:100";
+            m_Tanks[0].m_Instance.GetComponent<TankHealth>().m_CurrentHealthDisplay.text = "HP:" + ((int)floatArmorPlus * 100).ToString();
             m_Tanks[1].m_Instance.GetComponent<TankHealth>().m_CurrentHealthDisplay.text = "HP:100";
+            m_Tanks[0].m_Instance.GetComponent<TankHealth>().hpSlider[0].value = floatArmorPlus - 1.0f;
             m_Tanks[0].m_Instance.GetComponent<TankHealth>().hpSlider[1].value = 1.0f;
             m_Tanks[1].m_Instance.GetComponent<TankHealth>().hpSlider[1].value = 1.0f;
             // Wait for the specified length of time until yielding control back to the game loop.
@@ -339,6 +354,11 @@ namespace Complete
             //userwinDialog.SetActive(true);
             // Wait for the specified length of time until yielding control back to the game loop.
             yield return m_EndWait;//終了時少し待つ
+
+            //アイテム課題:勝者が確定したらarmorPlusの使用を終わらせる
+            if(m_GameWinner != null){
+                armorPlusManager.CompleteUseArmorPlus();
+            }
 
             if (m_GameWinner != null)//勝者が確定したのち、処理を分ける、PvPの仕様が分からないのでとりあえず自身のみの更新を想定
             {
