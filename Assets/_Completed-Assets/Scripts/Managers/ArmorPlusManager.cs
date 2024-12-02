@@ -9,7 +9,7 @@ public class ArmorPlusManager : MonoBehaviour
     public ArmorPlus armorPlus;
     public Text armorPlusNumDisplay;
     public Text armorStateDisplay;
-    
+    public ItemSetUp itemSetUp;
     private void Awake(){
         if(Instance==null){
             Instance = this;
@@ -35,6 +35,7 @@ public class ArmorPlusManager : MonoBehaviour
             armorPlus.used = true;
             armorPlusNumDisplay.text = "ArmorPlus\nNum : " + armorPlus.quantity.ToString();
             armorStateDisplay.text = "Armor *2";
+            itemSetUp.SendItem();
             return true;
         }
         return false;

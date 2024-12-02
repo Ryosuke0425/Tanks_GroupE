@@ -1,0 +1,37 @@
+MySQL テーブル作成コード
+
+CREATE TABLE `users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) DEFAULT NULL,
+  `user_id` varchar(36) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_id` (`user_id`)
+) 
+
+CREATE TABLE `battlerecords` (
+  `record_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(36) DEFAULT NULL,
+  `wins` int DEFAULT '0',
+  `losses` int DEFAULT '0',
+  `total_matches` int DEFAULT '0',
+  `pre_rank` varchar(36) DEFAULT NULL,
+  PRIMARY KEY (`record_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `battlerecords_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
+)
+
+CREATE TABLE user_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id varchar(50) NOT NULL,
+    stamina INT DEFAULT 3,
+    staminaUp INT DEFAULT 3,
+    ArmorPlus INT DEFAULT 3,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE user_login (
+    user_id varchar(50) PRIMARY KEY,
+    last_login DATE NOT NULL,  -- 最終ログイン日
+    consecutive_days INT DEFAULT 0  -- 連続ログイン日数
+);

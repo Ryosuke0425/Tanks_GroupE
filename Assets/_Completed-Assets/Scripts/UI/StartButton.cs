@@ -35,6 +35,9 @@ public class StartButton : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // 特定のキーに関連するデータを削除
+        //PlayerPrefs.DeleteKey("UserID");
+        //PlayerPrefs.DeleteKey("UserName");
         ws = new WebSocket("ws://localhost:8765");//変更予定、異なるデバイスからでもサーバに通信できるようにしたい
         ws.OnMessage += OnMessageReceived;//OnMessageReceivedメソッドをイベントハンドラとして登録、メッセージ受信時発火
         ws.OnError += OnError;
@@ -85,7 +88,8 @@ public class StartButton : MonoBehaviour
     private void LoginUser()//データを送る操作
     {
         user_Name = PlayerPrefs.GetString("UserName");
-        var loginData = new CreateUserData{ type = "login", username = user_Name };
+        userId = PlayerPrefs.GetString("UserID");
+        var loginData = new CreateUserData{ type = "login", username = user_Name ,user_id = userId};
         Debug.Log("success login:" + loginData);
         ws.Send(JsonUtility.ToJson(loginData));//データを送る
     }

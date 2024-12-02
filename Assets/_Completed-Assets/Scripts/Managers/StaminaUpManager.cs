@@ -9,6 +9,7 @@ public class StaminaUpManager : MonoBehaviour
     public StaminaUp staminaUp;
     public StaminaManager staminaManager;
     public Text staminaUpNumDisplay;
+    public ItemSetUp itemSetUp;
     
     private void Awake(){
         if(Instance==null){
@@ -33,6 +34,7 @@ public class StaminaUpManager : MonoBehaviour
         if(staminaUp != null && staminaUp.quantity > 0 && staminaManager.AddStamina(1)){
             staminaUp.quantity--;
             staminaUpNumDisplay.text = "StaminaUp\nNum : " + staminaUp.quantity.ToString();
+            itemSetUp.SendItem();
             return true;
         }
         return false;
