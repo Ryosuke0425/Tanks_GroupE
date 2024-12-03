@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace Complete
@@ -33,11 +35,24 @@ namespace Complete
         public event Action<int> OnShellStockChanged;   //TankManagerがリスナー
 
         private bool isIncreasing = true;
+
+        private Dictionary<string, WeaponStockData> weaponStock;
+        private GameObject minePrefab;
+        private string putMineButton;
+        private event Action changeMineStockEvent;
+        private event Action putMineEvent;
+
         private void OnCollisionEnter(Collision collision)
         {
             if (collision.gameObject.CompareTag("ShellCartridge"))
             {
                 Add_Bullets();
+                Destroy(collision.gameObject);
+            }
+            if (collision.gameObject.CompareTag("MineCartridge"))
+            {
+                weaponStock["mine"].AddStock(1);
+                changeMineStockEvent.Invoke();
                 Destroy(collision.gameObject);
             }
         }
@@ -86,6 +101,8 @@ namespace Complete
 
             // The rate that the launch force charges up is the range of possible forces by the max charge time.
             m_ChargeSpeed = (m_MaxLaunchForce - m_MinLaunchForce) / m_MaxChargeTime;
+            weaponStock.Add("mine", new WeaponStockData());
+            putMineButton = "Put mine";
         }
 
         private void Update()
@@ -146,6 +163,13 @@ namespace Complete
                 Debug.Log("砲弾なし");
             }
             */
+            if (Input.GetButtonDown(putMineButton))
+            {
+                if (weaponStock["mine"].CurrentStock > 0)
+                {
+                    PlaceMine();
+                }
+            }
         }
 
         public void Fire()
@@ -168,6 +192,17 @@ namespace Complete
             m_ShootingAudio.Play();
 
             m_CurrentLaunchForce = m_MinLaunchForce;
+        }
+
+        public void PlaceMine()
+        {
+            if (weaponStock["mine"].CurrentStock > 0)
+            {
+                Vector3 minePosition = turret.position + turret.forward * 1.5f;
+                Instantiate(minePrefab, minePosition, turret.rotation);
+                weaponStock["mine"].UseStock(1);
+                changeMineStockEvent.Invoke();
+            }
         }
     }
 }

@@ -8,6 +8,7 @@ public class CartridgeSpawner : MonoBehaviour
     Vector3 spawnAreaMin = new Vector3(-10, 1, -10);         //ê∂ê¨îÕàÕÇÃéwíË
     Vector3 spawnAreaMax = new Vector3(10, 1, 10);
     [SerializeField] private float spawnInterval = 15f;
+    [SerializeField] private CartridgeData cartridgeData;
 
     private Coroutine spawnCoroutine;
     private Complete.GameManager gameManager;
@@ -48,13 +49,7 @@ public class CartridgeSpawner : MonoBehaviour
     }
     private void SpawnCartridge()
     {
-        Vector3 randomPosition = new Vector3(
-            Random.Range(spawnAreaMin.x, spawnAreaMax.x),
-            Random.Range(spawnAreaMin.y, spawnAreaMax.y),
-            Random.Range(spawnAreaMin.z, spawnAreaMax.z)
-            );
-
-        Instantiate(ShellCartridge, randomPosition, Quaternion.identity);
+        Instantiate(ShellCartridge, cartridgeData.spawnPosition, Quaternion.identity);
     }
 
     private IEnumerator SpawnRoutine()

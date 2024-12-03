@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using Complete;
+using System.Collections.Generic;
 namespace Complete
 {
     [Serializable]
@@ -23,11 +24,18 @@ namespace Complete
         private TankShooting m_Shooting;                        // Reference to tank's shooting script, used to disable and enable control.
         private GameObject m_CanvasGameObject;                  // Used to disable the world space UI during the Starting and Ending phases of each round.
 
-        public event Action<int, int> OnWeaponStockChanged;   　//HudManagerがリスナー
+        public event Action<int, int> OnWeaponStockChanged;     // HudManagerがリスナー
 
         private void HandleShellStockChanged(int shellStock)
         {
             OnWeaponStockChanged?.Invoke(m_PlayerNumber, shellStock);
+        }
+        private void HandleWeaponStockChanged(int playerNumber, Dictionary<string, WeaponStockData> weaponStock)
+        {
+            if (playerNumber == m_PlayerNumber)
+            {
+                
+            }
         }
         private void OnDisable()
         {
