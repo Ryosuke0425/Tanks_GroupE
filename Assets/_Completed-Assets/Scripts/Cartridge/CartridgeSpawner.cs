@@ -5,12 +5,13 @@ using Complete;
 public class CartridgeSpawner : MonoBehaviour
 {
     [SerializeField] private GameObject ShellCartridge;
-    Vector3 spawnAreaMin = new Vector3(-10, 1, -10);         //ê∂ê¨îÕàÕÇÃéwíË
-    Vector3 spawnAreaMax = new Vector3(10, 1, 10);
-    [SerializeField] private float spawnInterval = 15f;
+    [SerializeField] private float spawnInterval = 2f;
 
     private Coroutine spawnCoroutine;
     private Complete.GameManager gameManager;
+
+    [SerializeField] private CartridgeData shellCartridge;
+    [SerializeField] private CartridgeData mineCartridge;
     private void OnEnable()
     {
         gameManager = FindObjectOfType<Complete.GameManager>();
@@ -27,7 +28,7 @@ public class CartridgeSpawner : MonoBehaviour
             gameManager.OnGameStateChanged -= HandleGameStateChanged;
         }
     }
-    
+
     private void HandleGameStateChanged(Complete.GameManager.GameState Current_GameState)
     {
         if (Current_GameState == Complete.GameManager.GameState.RoundPlaying)
@@ -49,18 +50,21 @@ public class CartridgeSpawner : MonoBehaviour
     private void SpawnCartridge()
     {
         Vector3 randomPosition = new Vector3(
-            Random.Range(spawnAreaMin.x, spawnAreaMax.x),
-            Random.Range(spawnAreaMin.y, spawnAreaMax.y),
-            Random.Range(spawnAreaMin.z, spawnAreaMax.z)
-            );
+            Random.Range(-10, 10),
+            Random.Range(-10, 10),
+            Random.Range(-10, 10)
+        );
 
-        Instantiate(ShellCartridge, randomPosition, Quaternion.identity);
+        // Instantiate(ShellCartridge, randomPosition, Quaternion.identity);
+        Instantiate(shellCartridge.cartridgePrefab, shellCartridge.cartridgePosition, Quaternion.identity);
+        Instantiate(mineCartridge.cartridgePrefab, mineCartridge.cartridgePosition, Quaternion.identity);
     }
 
     private IEnumerator SpawnRoutine()
     {
         while (true)
         {
+            Debug.Log("SpawnCartridge");
             SpawnCartridge();
             yield return new WaitForSeconds(spawnInterval);
         }
@@ -75,6 +79,6 @@ public class CartridgeSpawner : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 }
