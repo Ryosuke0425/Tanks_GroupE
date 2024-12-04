@@ -22,7 +22,7 @@ namespace Complete
         private float m_CurrentLaunchForce;         // The force that will be given to the shell when the fire button is released.
         private float m_ChargeSpeed;                // How fast the launch force increases, based on the max charge time.
         private bool m_Fired;                       // Whether or not the shell has been launched with this button press.
-        
+
 
         private int m_Bullets_start_hold;         //1-3追加
 
@@ -150,10 +150,14 @@ namespace Complete
 
         public void Fire()
         {
+            if (gameObject.GetComponent<TankHealth>().IsInvincible)
+            {
+                return;
+            }
             m_Fired = true;
             m_Bullets_hold -= 1;
             OnShellStockChanged?.Invoke(m_Bullets_hold);
-                // Debugging to check for null references
+            // Debugging to check for null references
             if (m_Shell == null) Debug.LogError("Shell is null");
             if (m_FireTransform == null) Debug.LogError("FireTransform is null");
             if (turret == null) Debug.LogError("Turret is null");

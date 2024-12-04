@@ -11,7 +11,7 @@ namespace Complete
         public AudioClip m_EngineIdling;            // Audio to play when the tank isn't moving.
         public AudioClip m_EngineDriving;           // Audio to play when the tank is moving.
         public float m_PitchRange = 0.2f;           // The amount by which the pitch of the engine noises can vary.
-        
+
         public Transform turret;                     // 砲塔のTransform
         public float turretRotationSpeed = 100f;    // 砲塔の回転速度
 
@@ -79,29 +79,33 @@ namespace Complete
             m_MovementInputValue = Input.GetAxis(m_MovementAxisName);
             m_TurnInputValue = Input.GetAxis(m_TurnAxisName);
 
-        // 砲塔の回転処理
-        if (m_PlayerNumber == 1)
-        {
-            if (Input.GetKey(KeyCode.Q))
+            // 砲塔の回転処理
+            if (m_PlayerNumber == 1)
             {
-                turret.Rotate(Vector3.up, -turretRotationSpeed * Time.deltaTime);
+                if (gameObject.GetComponent<TankHealth>().IsInvincible)
+                {
+                    return;
+                }
+                if (Input.GetKey(KeyCode.Q))
+                {
+                    turret.Rotate(Vector3.up, -turretRotationSpeed * Time.deltaTime);
+                }
+                if (Input.GetKey(KeyCode.E))
+                {
+                    turret.Rotate(Vector3.up, turretRotationSpeed * Time.deltaTime);
+                }
             }
-            if (Input.GetKey(KeyCode.E))
+            else if (m_PlayerNumber == 2) // 2プレイヤー目のタンク
             {
-                turret.Rotate(Vector3.up, turretRotationSpeed * Time.deltaTime);
+                if (Input.GetKey(KeyCode.Comma)) // ','キー
+                {
+                    turret.Rotate(Vector3.up, -turretRotationSpeed * Time.deltaTime);
+                }
+                if (Input.GetKey(KeyCode.Period)) // '.'キー
+                {
+                    turret.Rotate(Vector3.up, turretRotationSpeed * Time.deltaTime);
+                }
             }
-        }
-        else if (m_PlayerNumber == 2) // 2プレイヤー目のタンク
-        {
-            if (Input.GetKey(KeyCode.Comma)) // ','キー
-            {
-                turret.Rotate(Vector3.up, -turretRotationSpeed * Time.deltaTime);
-            }
-            if (Input.GetKey(KeyCode.Period)) // '.'キー
-            {
-                turret.Rotate(Vector3.up, turretRotationSpeed * Time.deltaTime);
-            }
-        }
 
 
             EngineAudio();
@@ -137,12 +141,20 @@ namespace Complete
 
         private void Move()
         {
+            if (gameObject.GetComponent<TankHealth>().IsInvincible)
+            {
+                return;
+            }
             Vector3 movement = transform.forward * m_MovementInputValue * m_Speed * Time.deltaTime;
             m_Rigidbody.MovePosition(m_Rigidbody.position + movement);
         }
 
         private void Turn()
         {
+            if (gameObject.GetComponent<TankHealth>().IsInvincible)
+            {
+                return;
+            }
             float turn = m_TurnInputValue * m_TurnSpeed * Time.deltaTime;
             Quaternion turnRotation = Quaternion.Euler(0f, turn, 0f);
             m_Rigidbody.MoveRotation(m_Rigidbody.rotation * turnRotation);
