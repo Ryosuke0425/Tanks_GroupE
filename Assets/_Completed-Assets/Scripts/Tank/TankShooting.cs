@@ -24,8 +24,7 @@ namespace Complete
         private bool m_Fired;                       // Whether or not the shell has been launched with this button press.
 
 
-        private int m_Bullets_start_hold;         //1-3追加
-
+        public int Bullets_start_hold = 10;         //1-3追加
         private int m_Bullets_hold;
         private int m_Bullets_max_hold = 50;
         private int m_Bullets_supply = 10;
@@ -90,7 +89,7 @@ namespace Complete
 
         private void Start()
         {
-            m_Bullets_hold = 10;
+            m_Bullets_hold = Bullets_start_hold;
             // The fire axis is based on the player number.
             m_FireButton = "Fire" + m_PlayerNumber;
             putMineButton = "PutMine" + m_PlayerNumber;
@@ -148,7 +147,7 @@ namespace Complete
                 }
             }
             /*
-            if (m_Bullets_hold > 0)
+            if (m_Bullets_hold > 0)//砲弾の所有数をデバック
             {
                 Debug.Log(m_Bullets_hold);
             }

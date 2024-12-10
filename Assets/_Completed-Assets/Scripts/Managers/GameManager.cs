@@ -50,6 +50,8 @@ namespace Complete
         private string my_current_Rank;
         private float floatArmorPlus = 1f;         //アイテム課題:ArmorPlusの使用状況・1(未使用),2(使用中)
 
+        //[SerializeField] private GameObject HPUIyour;//ゲーム修了時HUDを非表示にする
+        //[SerializeField] private GameObject HPUIenemy;
         private bool show_text = false;//メインスレッドで処理するために使う変数
         private string currentUsername;
         private string currentUserID;
@@ -92,7 +94,7 @@ namespace Complete
             }
         }
         private void Start()
-        {
+        {   //サーバー関連
             ws = new WebSocket("ws://localhost:8765");//変更予定、異なるデバイスからでもサーバに通信できるようにしたい
             ws.OnMessage += OnMessageReceived;//OnMessageReceivedメソッドをイベントハンドラとして登録、メッセージ受信時発火
             ws.OnError += OnError;
@@ -100,7 +102,9 @@ namespace Complete
 
             currentUserID = PlayerPrefs.GetString("UserID");
             currentUsername = PlayerPrefs.GetString("UserName");
+            
             userwinDialog.SetActive(false);
+
             closeButton.onClick.AddListener(CloseWinDialog);
             // Create the delays so they only have to be made once.
             m_StartWait = new WaitForSeconds (m_StartDelay);
