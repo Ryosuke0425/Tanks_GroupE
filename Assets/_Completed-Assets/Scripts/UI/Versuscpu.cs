@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-public class VersusPlayerButton : MonoBehaviour
+public class Versuscpu : MonoBehaviour
 {
     [SerializeField]
     private Button Button;
@@ -21,7 +21,7 @@ public class VersusPlayerButton : MonoBehaviour
         }
 
         // スタミナがある場合、LobbySceneをロード
-        SceneManager.LoadScene("LobbyScene");
+        SceneManager.LoadScene("_Complete-Game");
     }
 
     // Start is called before the first frame update
