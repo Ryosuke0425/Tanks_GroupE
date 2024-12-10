@@ -22,7 +22,7 @@ namespace Complete
         private float m_CurrentLaunchForce;         // The force that will be given to the shell when the fire button is released.
         private float m_ChargeSpeed;                // How fast the launch force increases, based on the max charge time.
         private bool m_Fired;                       // Whether or not the shell has been launched with this button press.
-        
+
 
         private int m_Bullets_start_hold;         //1-3追加
 
@@ -33,11 +33,21 @@ namespace Complete
         public event Action<int> OnShellStockChanged;   //TankManagerがリスナー
 
         private bool isIncreasing = true;
+
+        private WeaponStockData mineStock = new WeaponStockData(3, 3, 1);
+        [SerializeField] private GameObject minePrefab;
+        private string putMineButton;
+
         private void OnCollisionEnter(Collision collision)
         {
             if (collision.gameObject.CompareTag("ShellCartridge"))
             {
                 Add_Bullets();
+                Destroy(collision.gameObject);
+            }
+            if (collision.gameObject.CompareTag("MineCartridge"))
+            {
+                mineStock.AddStock(mineStock.StockInCartridge);
                 Destroy(collision.gameObject);
             }
         }
@@ -83,6 +93,7 @@ namespace Complete
             m_Bullets_hold = 10;
             // The fire axis is based on the player number.
             m_FireButton = "Fire" + m_PlayerNumber;
+            putMineButton = "PutMine" + m_PlayerNumber;
 
             // The rate that the launch force charges up is the range of possible forces by the max charge time.
             m_ChargeSpeed = (m_MaxLaunchForce - m_MinLaunchForce) / m_MaxChargeTime;
@@ -146,14 +157,22 @@ namespace Complete
                 Debug.Log("砲弾なし");
             }
             */
+            if (Input.GetButtonDown(putMineButton))
+            {
+                PutMine();
+            }
         }
 
         public void Fire()
         {
+            if (gameObject.GetComponent<TankHealth>().IsInvincible)
+            {
+                return;
+            }
             m_Fired = true;
             m_Bullets_hold -= 1;
             OnShellStockChanged?.Invoke(m_Bullets_hold);
-                // Debugging to check for null references
+            // Debugging to check for null references
             if (m_Shell == null) Debug.LogError("Shell is null");
             if (m_FireTransform == null) Debug.LogError("FireTransform is null");
             if (turret == null) Debug.LogError("Turret is null");
@@ -168,6 +187,20 @@ namespace Complete
             m_ShootingAudio.Play();
 
             m_CurrentLaunchForce = m_MinLaunchForce;
+        }
+
+        private void PutMine()
+        {
+            if (gameObject.GetComponent<TankHealth>().IsInvincible)
+            {
+                return;
+            }
+            if (mineStock.CurrentStock > 0)
+            {
+                mineStock.ConsumeStock(1);
+                Vector3 minePosition = gameObject.transform.position + turret.forward * 1.5f;
+                Instantiate(minePrefab, minePosition, turret.rotation);
+            }
         }
     }
 }
