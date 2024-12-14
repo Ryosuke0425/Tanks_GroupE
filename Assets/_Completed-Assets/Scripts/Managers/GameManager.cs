@@ -125,7 +125,7 @@ namespace Complete
         private void CloseWinDialog()
         {
             userwinDialog.SetActive(false);
-            SceneManager.LoadScene(SceneNames.TitleScene);
+            SceneManager.LoadScene(SceneNames.HomeScene);
         }
         public void Update_Win()
         {
