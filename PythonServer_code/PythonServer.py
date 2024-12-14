@@ -216,7 +216,7 @@ async def handle_connection(websocket, path):
         elif data["type"] == "show_winers":  # 自身の戦績とTop10の人の戦績を返す
             try:
                 print("OK get message")
-                query = """SELECT user_rank, ranked_records.user_id, username, wins, losses, win_rate FROM (SELECT ROW_NUMBER() OVER (ORDER BY wins / NULLIF(total_matches,0) DESC) AS user_rank,
+                query = """SELECT user_rank, ranked_records.user_id, username, wins, losses, win_rate FROM (SELECT ROW_NUMBER() OVER (ORDER BY wins / NULLIF(total_matches,0) DESC, total_matches DESC) AS user_rank,
                 battlerecords.user_id,
                 users.username,
                 battlerecords.wins,
@@ -243,6 +243,7 @@ async def handle_connection(websocket, path):
                     for i, user in enumerate(top_users):
                         if user["user_id"] == player_info["user_id"]:
                             player_info["user_rank"] = i + 1
+
                 player_info = {  # ユーザ情報の整理
                     "user_rank": player_info["user_rank"],
                     "user_id": player_info["user_id"],
@@ -250,7 +251,7 @@ async def handle_connection(websocket, path):
                     "wins": player_info["wins"],
                     "losses": player_info["losses"],
                     "win_rate": player_info["win_rate"],
-                    "pre_rank": player_info["pre_rank"],  # pre_rankがnullの場合
+                    "pre_rank": player_info["pre_rank"],
                 }
                 query = "update battlerecords set pre_rank = %s where user_id=%s"
                 cursor.execute(
