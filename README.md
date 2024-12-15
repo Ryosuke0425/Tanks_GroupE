@@ -9,7 +9,7 @@
 * 上限は5
 * バトル開始時に-1
 * StaminaUp使用で+1
-* Staminaが0になるとバトル開始ができない
+* Staminaが0になるとバトル開始ができない.バトル開始しようとすると「No Stamina!」と表示される.
 #### StaminaUp
 * 1つ消費することでStaminaが+1される
 * Staminaの上限は5であるためStaminaが5の時に使用すると「Failded to use StaminaUp」と表示される
