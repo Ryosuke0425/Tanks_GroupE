@@ -29,11 +29,11 @@ namespace Complete
         private int m_Bullets_max_hold = 50;
         private int m_Bullets_supply = 10;
 
-        public event Action<int> OnShellStockChanged;   //TankManagerがリスナー
+        public event Action<int, WeaponStockData> OnShellStockChanged;   //TankManagerがリスナー
 
         private bool isIncreasing = true;
 
-        private WeaponStockData mineStock = new WeaponStockData(3, 3, 1);
+        private WeaponStockData mineStock = new WeaponStockData(0, 3, 1);
         [SerializeField] private GameObject minePrefab;
         private string putMineButton;
 
@@ -49,18 +49,17 @@ namespace Complete
                 mineStock.AddStock(mineStock.StockInCartridge);
                 Destroy(collision.gameObject);
             }
+            OnShellStockChanged?.Invoke(m_Bullets_hold, mineStock);
         }
         private void Add_Bullets()
         {
             if (m_Bullets_hold + m_Bullets_supply < m_Bullets_max_hold)
             {
                 m_Bullets_hold += m_Bullets_supply;
-                OnShellStockChanged?.Invoke(m_Bullets_hold);
             }
             else
             {
                 m_Bullets_hold = m_Bullets_max_hold;
-                OnShellStockChanged?.Invoke(m_Bullets_hold);
             }
         }
         private void Awake()
@@ -170,7 +169,7 @@ namespace Complete
             }
             m_Fired = true;
             m_Bullets_hold -= 1;
-            OnShellStockChanged?.Invoke(m_Bullets_hold);
+            OnShellStockChanged?.Invoke(m_Bullets_hold, mineStock);
             // Debugging to check for null references
             if (m_Shell == null) Debug.LogError("Shell is null");
             if (m_FireTransform == null) Debug.LogError("FireTransform is null");
@@ -197,6 +196,7 @@ namespace Complete
             if (mineStock.CurrentStock > 0)
             {
                 mineStock.ConsumeStock(1);
+                OnShellStockChanged?.Invoke(m_Bullets_hold, mineStock);
                 Vector3 minePosition = gameObject.transform.position + turret.forward * 1.5f;
                 Instantiate(minePrefab, minePosition, turret.rotation);
             }

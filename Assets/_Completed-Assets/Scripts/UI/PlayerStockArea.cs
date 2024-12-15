@@ -8,7 +8,8 @@ public class PlayerStockArea : MonoBehaviour
 {
     [SerializeField] private Image[] shell1s;       //砲弾のストック数
     [SerializeField] private Image[] shell10s;
-    public void UpdatePlayerStockArea(int stockCount) //HudManager.csで使用,弾の表示非表示
+    [SerializeField] private Image[] mines;
+    public void UpdatePlayerStockArea(int stockCount, WeaponStockData mineStock) //HudManager.csで使用,弾の表示非表示
     {
         for (int i = 0; i < shell1s.Length; i++)
         {
@@ -31,6 +32,18 @@ public class PlayerStockArea : MonoBehaviour
             else
             {
                 shell10s[i].gameObject.SetActive(false);
+            }
+        }
+
+        for (int i = 0; i < mines.Length; i++)
+        {
+            if (i < mineStock.CurrentStock)
+            {
+                mines[i].gameObject.SetActive(true);
+            }
+            else
+            {
+                mines[i].gameObject.SetActive(false);
             }
         }
     }
