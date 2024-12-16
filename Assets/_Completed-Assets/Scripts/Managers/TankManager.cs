@@ -4,7 +4,7 @@ using Complete;
 namespace Complete
 {
     [Serializable]
-    public class TankManager
+    public class TankManager 
     {
         // This class is to manage various settings on a tank.
         // It works with the GameManager class to control how the tanks behave
@@ -23,11 +23,11 @@ namespace Complete
         private TankShooting m_Shooting;                        // Reference to tank's shooting script, used to disable and enable control.
         private GameObject m_CanvasGameObject;                  // Used to disable the world space UI during the Starting and Ending phases of each round.
 
-        public event Action<int, int> OnWeaponStockChanged;     //HudManagerがリスナー
+        public event Action<int, int, WeaponStockData> OnWeaponStockChanged;     //HudManagerがリスナー
 
-        private void HandleShellStockChanged(int shellStock)
+        private void HandleShellStockChanged(int shellStock, WeaponStockData mineStock)
         {
-            OnWeaponStockChanged?.Invoke(m_PlayerNumber, shellStock);
+            OnWeaponStockChanged?.Invoke(m_PlayerNumber, shellStock, mineStock);
         }
         private void OnDisable()
         {

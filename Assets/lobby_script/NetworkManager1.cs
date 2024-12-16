@@ -1,136 +1,155 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement; // シーン管理用
 using WebSocketSharp;
-using Complete;
-
+using System.Collections;
 
 public class LobbyManager : MonoBehaviour
 {
     public Button readyButton;
-    public List<Button> stampButtons;
     public Text statusText;
+    public InputField chatInputField;  // チャット入力欄
+    public Button sendChatButton;      // チャット送信ボタン
+
+    // StampManagerへの参照を追加
+    public StampManager stampManager;
 
     private WebSocket ws;
     private bool isReady = false;
 
-    // チャット関連のUI
-    public InputField chatInputField;  // チャット入力欄
-    public Button sendChatButton;      // チャット送信ボタン
-
-    // PVPサーバーURLを保持
     private string pvpServerUrl;
+    private string matchId;
 
     // イベント: 他スクリプトで受信したメッセージを処理するために利用
     public Action<string, string> OnChatMessageReceived;
 
     void Start()
     {
+        InitializeWebSocket();
+        SetupReadyButton();
+        SetupChatButton();
+
+        // StampManagerがアサインされているか確認
+        if (stampManager == null)
+        {
+            Debug.LogError("LobbyManager: StampManagerがアサインされていません。");
+        }
+    }
+
+    private void InitializeWebSocket()
+    {
         try
         {
-            // サーバーとのWebSocket接続
-            ws = new WebSocket("ws://localhost:8000/"); // サーバーのURL
+            ws = new WebSocket("ws://localhost:8000/");
             ws.OnMessage += OnMessageReceived;
             ws.OnError += OnError;
             ws.Connect();
         }
         catch (Exception e)
         {
-            Debug.LogError($"WebSocket connection error: {e.Message}");
+            Debug.LogError($"LobbyManager: WebSocket connection error: {e.Message}");
         }
+    }
 
-        // READYボタンの設定
-        readyButton.onClick.AddListener(() =>
+    private void SetupReadyButton()
+    {
+        if (readyButton != null)
         {
-            if (!isReady)
+            readyButton.onClick.AddListener(() =>
             {
-                SendReadyStatus();
-                isReady = true;
-                UpdateStatusText("Waiting for opponent...");
-            }
-        });
-
-        // スタンプボタンの設定
-        for (int i = 0; i < stampButtons.Count; i++)
-        {
-            int stampId = i; // ローカルスコープで固定
-            stampButtons[i].onClick.AddListener(() => SendStamp(stampId));
+                if (!isReady)
+                {
+                    SendReadyStatus();
+                    isReady = true;
+                    UpdateStatusText("Waiting for opponent...");
+                }
+            });
         }
-
-        // チャット送信ボタンの設定
-        sendChatButton.onClick.AddListener(() =>
+        else
         {
-            if (!string.IsNullOrEmpty(chatInputField.text))
+            Debug.LogError("LobbyManager: Ready Buttonがアサインされていません。");
+        }
+    }
+
+    private void SetupChatButton()
+    {
+        if (sendChatButton != null && chatInputField != null)
+        {
+            sendChatButton.onClick.AddListener(() =>
             {
-                SendChatMessage(chatInputField.text);
-                chatInputField.text = ""; // 入力欄をクリア
-            }
-        });
+                if (!string.IsNullOrEmpty(chatInputField.text))
+                {
+                    SendChatMessage(chatInputField.text);
+                    chatInputField.text = "";
+                }
+            });
+        }
+        else
+        {
+            Debug.LogError("LobbyManager: Chat ButtonまたはChat Input Fieldがアサインされていません。");
+        }
     }
 
     private void OnMessageReceived(object sender, MessageEventArgs e)
     {
+        // メッセージの処理をメインスレッドに移動
+        UnityMainThreadDispatcher.Enqueue(() => ProcessMessage(e.Data));
+    }
+
+    private void ProcessMessage(string message)
+    {
         try
         {
-            Debug.Log("Received message: " + e.Data);
+            Debug.Log("LobbyManager: Received message: " + message);
 
-            // 空メッセージのチェック
-            if (string.IsNullOrWhiteSpace(e.Data))
+            if (string.IsNullOrWhiteSpace(message))
             {
-                Debug.LogWarning("Received an empty message.");
+                Debug.LogWarning("LobbyManager: Received an empty message.");
                 return;
             }
 
-            // JSON解析
-            var data = JsonUtility.FromJson<ServerMessage>(e.Data);
+            var data = JsonUtility.FromJson<ServerMessage>(message);
 
-            // typeに基づく処理
             switch (data.type)
             {
                 case "status_update":
-                    HandleStatusUpdate(data.status);
+                    HandleStatusUpdate(data.status, data.player_number, data.match_id);
                     break;
 
                 case "game_start":
-                    HandleGameStart(data.pvp_server_url);
+                    HandleGameStart(data.pvp_server_url, data.match_id);
                     break;
 
                 case "chat":
                     ProcessChatMessage(data.sender, data.text);
                     break;
-                case "send_message": // サーバーが送信するチャットタイプにも対応
-                    OnChatMessageReceived?.Invoke(data.sender, data.text);
-                    break;
 
                 case "stamp":
-                    DisplayOpponentStamp(data.stamp_id);
+                    DisplayOpponentStamp(data.stampId);
                     break;
 
                 case "ready_notice":
-                    Debug.Log($"Opponent is ready: {data.sender} ");
-                    UpdateStatusText("Oppent is ready !!");
-                    break;
-                case "assign_player_number":
-                    HandleAssignPlayerNumber(data.player_number);
+                    Debug.Log($"LobbyManager: Opponent is ready: {data.sender}");
+                    UpdateStatusText("Opponent is ready!");
                     break;
 
                 default:
-                    Debug.LogWarning($"Unknown message type: {data.type}");
+                    Debug.LogWarning($"LobbyManager: Unknown message type: {data.type}");
                     break;
             }
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Error processing message: {ex.Message}\nMessage content: {e.Data}");
+            Debug.LogError($"LobbyManager: Error processing message: {ex.Message}\nMessage content: {message}");
         }
     }
 
-    private void HandleStatusUpdate(string status)
+    private void HandleStatusUpdate(string status, int playerNumber, string receivedMatchId)
     {
-        // statusフィールドに基づく処理
+        matchId = receivedMatchId;
+
         switch (status)
         {
             case "matching":
@@ -139,6 +158,7 @@ public class LobbyManager : MonoBehaviour
 
             case "matched":
                 UpdateStatusText("Matched! Waiting for opponent to ready up...");
+                AssignPlayerNumber(playerNumber);
                 break;
 
             case "ready":
@@ -146,36 +166,72 @@ public class LobbyManager : MonoBehaviour
                 break;
 
             default:
-                Debug.LogWarning($"Unknown status: {status}");
+                Debug.LogWarning($"LobbyManager: Unknown status: {status}");
                 break;
         }
     }
 
-    private void HandleGameStart(string serverUrl)
+    private void HandleGameStart(string serverUrl, string receivedMatchId)
     {
-        // PVPサーバーのURLを保持
         pvpServerUrl = serverUrl;
+        matchId = receivedMatchId;
 
-        // メインスレッドでシーンをロード
         UnityMainThreadDispatcher.Enqueue(() =>
         {
-            Debug.Log($"Connecting to PVP server: {serverUrl}");
+            Debug.Log($"LobbyManager: Saving PVP server URL: {pvpServerUrl} and matchId: {matchId}");
+
+            PlayerPrefs.SetString("MatchId", matchId);
+            PlayerPrefs.SetString("PVPServerUrl", pvpServerUrl);
+            PlayerPrefs.Save();
+
+            // WebSocket接続をクローズ
+            if (ws != null && ws.IsAlive)
+            {
+                ws.Close();
+                Debug.Log("LobbyManager: WebSocket connection closed before loading PVP scene.");
+            }
+
+            // PVPシーンに遷移
+            Debug.Log($"LobbyManager: Connecting to PVP server: {pvpServerUrl} with matchId: {matchId}");
             SceneManager.LoadScene("_Complete-Game");
         });
     }
 
     private void OnError(object sender, ErrorEventArgs e)
     {
-        Debug.LogError($"WebSocket error: {e.Message}");
+        Debug.LogError($"LobbyManager: WebSocket error: {e.Message}");
     }
 
     private void UpdateStatusText(string message)
     {
-        // メインスレッドでUI更新を安全に実行
         UnityMainThreadDispatcher.Enqueue(() =>
         {
             statusText.text = message;
         });
+    }
+
+    /// <summary>
+    /// スタンプメッセージを送信するメソッド
+    /// </summary>
+    /// <param name="stampId">送信するスタンプのID</param>
+    public void SendStamp(int stampId)
+    {
+        if (ws != null && ws.IsAlive)
+        {
+            var stampMessage = new ClientMessage
+            {
+                type = "stamp",
+                stampId = stampId,
+                match_id = matchId
+            };
+            string json = JsonUtility.ToJson(stampMessage);
+            ws.Send(json);
+            Debug.Log($"LobbyManager: Sent stamp: {stampId}");
+        }
+        else
+        {
+            Debug.LogWarning("LobbyManager: WebSocket is not open. Stamp not sent.");
+        }
     }
 
     private void SendReadyStatus()
@@ -183,22 +239,11 @@ public class LobbyManager : MonoBehaviour
         var message = new ClientMessage
         {
             type = "status_update",
-            status = "ready"
-        };
-            SendToServer(message);
-    }
-
-
-    private void SendStamp(int stampId)
-    {
-        var message = new ClientMessage
-        {
-            type = "stamp",
-            stamp_id = stampId
+            status = "ready",
+            match_id = matchId
         };
         SendToServer(message);
     }
-
 
     public void SendChatMessage(string message)
     {
@@ -206,31 +251,30 @@ public class LobbyManager : MonoBehaviour
         {
             type = "send_message",
             sender = "You",
-            text = message
+            text = message,
+            match_id = matchId
         };
         SendToServer(chatMessage);
     }
-
 
     private void SendToServer(object message)
     {
         if (ws != null && ws.IsAlive)
         {
             var json = JsonUtility.ToJson(message);
-            Debug.Log($"Sending message: {json}");
+            Debug.Log($"LobbyManager: Sending message: {json}");
             ws.Send(json);
         }
         else
         {
-            Debug.LogWarning("WebSocket connection is not alive. Message not sent.");
+            Debug.LogWarning("LobbyManager: WebSocket connection is not alive. Message not sent.");
         }
     }
+
     private void ProcessChatMessage(string sender, string text)
     {
-        // メッセージ処理をメインスレッドに移譲
         UnityMainThreadDispatcher.Enqueue(() =>
         {
-            // ChatManagerにメッセージを送信して表示
             ChatManager chatManager = FindObjectOfType<ChatManager>();
             if (chatManager != null)
             {
@@ -238,37 +282,46 @@ public class LobbyManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning("ChatManager not found in the scene.");
+                Debug.LogWarning("LobbyManager: ChatManager not found in the scene.");
             }
         });
     }
-    private void HandleAssignPlayerNumber(int playerNumber)
-    {
-        Debug.Log($"Assigned Player Number: {playerNumber}");
 
-        // メインスレッドで処理を行う
+    private void AssignPlayerNumber(int playerNumber)
+    {
+        Debug.Log($"LobbyManager: Assigned Player Number: {playerNumber}");
+
         UnityMainThreadDispatcher.Enqueue(() =>
         {
             PlayerPrefs.SetInt("PlayerId", playerNumber);
             PlayerPrefs.Save();
-            UpdateStatusText($"Your player number is: {playerNumber}");
+            UpdateStatusText(playerNumber == 1 ? "Your Tank color is blue" : "Your Tank color is red");
         });
     }
 
-
-
-
-
+    /// <summary>
+    /// サーバーから受信したスタンプメッセージをStampManagerで表示する
+    /// </summary>
+    /// <param name="stampId">表示するスタンプのID</param>
     private void DisplayOpponentStamp(int stampId)
     {
-        Debug.Log($"Opponent sent stamp: {stampId}");
+        Debug.Log($"LobbyManager: Opponent sent stamp: {stampId}");
+        if (stampManager != null)
+        {
+            stampManager.DisplayStamp(stampId);
+        }
+        else
+        {
+            Debug.LogError("LobbyManager: StampManagerがアサインされていません。");
+        }
     }
 
     void OnDestroy()
     {
-        if (ws != null && ws.IsAlive)
+        if (ws != null)
         {
             ws.Close();
+            ws = null;
         }
     }
 
@@ -277,10 +330,11 @@ public class LobbyManager : MonoBehaviour
     {
         public string type;
         public string status;
-        public string pvp_server_url; // PVPサーバーURL
-        public string sender;        // チャット送信者
-        public string text;          // チャット内容
-        public int stamp_id;         // スタンプID
+        public string pvp_server_url;
+        public string match_id;
+        public string sender;
+        public string text;
+        public int stampId; // キャメルケースに変更
         public int player_number;
     }
 
@@ -291,8 +345,7 @@ public class LobbyManager : MonoBehaviour
         public string status;
         public string sender;
         public string text;
-        public int stamp_id;
-        public int player_number;
+        public int stampId; // キャメルケースに変更
+        public string match_id;
     }
-
 }

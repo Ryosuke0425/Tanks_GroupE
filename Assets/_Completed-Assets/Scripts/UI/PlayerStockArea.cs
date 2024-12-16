@@ -6,9 +6,10 @@ using UnityEngine;
 using UnityEngine.UI;
 public class PlayerStockArea : MonoBehaviour
 {
-    [SerializeField] private Image[] shell1s;       //–C’e‚ÌƒXƒgƒbƒN”
+    [SerializeField] private Image[] shell1s;       //ï¿½Cï¿½eï¿½ÌƒXï¿½gï¿½bï¿½Nï¿½ï¿½
     [SerializeField] private Image[] shell10s;
-    public void UpdatePlayerStockArea(int stockCount) //HudManager.cs‚Åg—p,’e‚Ì•\¦”ñ•\¦
+    [SerializeField] private Image[] mines;
+    public void UpdatePlayerStockArea(int stockCount, WeaponStockData mineStock) //HudManager.csï¿½Ågï¿½p,ï¿½eï¿½Ì•\ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½
     {
         for (int i = 0; i < shell1s.Length; i++)
         {
@@ -33,7 +34,19 @@ public class PlayerStockArea : MonoBehaviour
                 shell10s[i].gameObject.SetActive(false);
             }
         }
+        for (int i = 0; i < mines.Length; i++)
+        {
+            if (i < mineStock.CurrentStock)
+            {
+                mines[i].gameObject.SetActive(true);
+            }
+            else
+            {
+                mines[i].gameObject.SetActive(false);
+            }
+        }
     }
+
     // Start is called before the first frame update
     void Start()
     {

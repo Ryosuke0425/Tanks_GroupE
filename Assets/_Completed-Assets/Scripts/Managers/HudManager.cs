@@ -8,13 +8,13 @@ public class HudManager : MonoBehaviour
     [SerializeField] private PlayerStockArea player1StockArea;
     [SerializeField] private PlayerStockArea player2StockArea;
     [SerializeField] private Complete.GameManager gameManager;
-    [SerializeField] private GameObject HPUIyour;//ƒQ[ƒ€C—¹HUD‚ğ”ñ•\¦‚É‚·‚é
+    [SerializeField] private GameObject HPUIyour;//ã‚²ãƒ¼ãƒ ä¿®äº†æ™‚HUDã‚’éè¡¨ç¤ºã«ã™ã‚‹
     [SerializeField] private GameObject HPUIenemy;
     [SerializeField] private GameObject VStext;
     //public static Complete.TankShooting shooting;
     public static Complete.TankShooting shooting = new Complete.TankShooting();
     private int firstHold = shooting.Bullets_start_hold;
-    private void HandleGameStateChanged(Complete.GameManager.GameState Current_GameState)//‹@”\‚µ‚Ä‚¢‚½
+    private void HandleGameStateChanged(Complete.GameManager.GameState Current_GameState)//æ©Ÿèƒ½ã—ã¦ã„ãŸ
     {
         switch (Current_GameState)
         {
@@ -30,16 +30,16 @@ public class HudManager : MonoBehaviour
         }
     }
 
-    private void HandleWeaponStockChanged(int playerNumber, int shellStock)//’ÊM‘Îí‚Å•Ï‚¦‚é•K—v‚ª‚ ‚é‚©‚à
+    private void HandleWeaponStockChanged(int playerNumber, int shellStock, WeaponStockData mineStock)//ï¿½ÊMï¿½Îï¿½Å•Ï‚ï¿½ï¿½ï¿½Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½é‚©ï¿½ï¿½
     {
         Debug.Log("HandleWeaponStockChanged");
         if (playerNumber == 1)
         {
-            player1StockArea.UpdatePlayerStockArea(shellStock);
+            player1StockArea.UpdatePlayerStockArea(shellStock, mineStock);
         }
         else if (playerNumber == 2)
         {
-            player2StockArea.UpdatePlayerStockArea(shellStock);
+            player2StockArea.UpdatePlayerStockArea(shellStock, mineStock);
         }
     }
     private void SetHUDVisibility(bool isVisible)
@@ -50,14 +50,12 @@ public class HudManager : MonoBehaviour
         HPUIenemy.gameObject.SetActive(isVisible);
         VStext.gameObject.SetActive(isVisible);
     }
-
     private void OnDestroy()
     {
         if (gameManager != null)
         {
             gameManager.OnGameStateChanged -= HandleGameStateChanged;
         }
-
         foreach (var tank in gameManager.m_Tanks)
         {
             tank.OnWeaponStockChanged -= HandleWeaponStockChanged;
@@ -71,13 +69,14 @@ public class HudManager : MonoBehaviour
         }
         foreach (var tank in gameManager.m_Tanks)
         {
-            tank.OnWeaponStockChanged += HandleWeaponStockChanged;          //OnWeaponStockChanged‚Ö‚ÌƒŠƒXƒi[‚Ì“o˜^
+            tank.OnWeaponStockChanged += HandleWeaponStockChanged;          //OnWeaponStockChangedã¸ã®ãƒªã‚¹ãƒŠãƒ¼ã®ç™»éŒ²
         }
     }
-    private void FirstHoldState() //Å‰‚Ì’e”‚ğ•\¦‚·‚é
+    private void FirstHoldState() //ï¿½Åï¿½ï¿½Ì’eï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     {
-        player1StockArea.UpdatePlayerStockArea(firstHold);
-        player2StockArea.UpdatePlayerStockArea(firstHold);   
+  
+        player1StockArea.UpdatePlayerStockArea(firstHold, new WeaponStockData(0, 3, 1));
+        player2StockArea.UpdatePlayerStockArea(firstHold, new WeaponStockData(0, 3, 1));   
     }
     // Start is called before the first frame update
     void Start()
@@ -85,7 +84,6 @@ public class HudManager : MonoBehaviour
         Debug.Log(firstHold);
         FirstHoldState();
     }
-
     // Update is called once per frame
     void Update()
     {

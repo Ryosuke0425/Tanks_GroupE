@@ -39,9 +39,6 @@ public class ChatManager : MonoBehaviour
 
     public void SendMessage(string message)
     {
-        // 自分のチャットエリアにメッセージを追加
-        AddChatMessage("You", message);
-
         // サーバーに送信
         if (lobbyManager != null)
         {
@@ -51,10 +48,20 @@ public class ChatManager : MonoBehaviour
         {
             Debug.LogWarning("LobbyManager is not available. Message not sent to the server.");
         }
+
+            // 入力欄をクリア
+        inputField.text = "";
     }
+
 
     public void AddChatMessage(string sender, string message)
     {
+        // 送信者が自分でない場合、"Opponent"に変更
+        if (sender != "You")
+        {
+         sender = "Opponent";
+        }
+
         // Prefabから新しいチャットアイテムを生成
         GameObject chatItem = Instantiate(chatItemPrefab, chatContent.transform);
 
@@ -65,6 +72,7 @@ public class ChatManager : MonoBehaviour
         // 自動スクロールを更新
         StartCoroutine(ScrollToBottom());
     }
+
 
     private IEnumerator ScrollToBottom()
     {
