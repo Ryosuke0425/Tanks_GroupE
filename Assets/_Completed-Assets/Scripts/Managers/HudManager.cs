@@ -30,16 +30,16 @@ public class HudManager : MonoBehaviour
         }
     }
 
-    private void HandleWeaponStockChanged(int playerNumber, int shellStock)//通信対戦で変える必要があるかも
+    private void HandleWeaponStockChanged(int playerNumber, int shellStock, WeaponStockData mineStock)//通信対戦で変える必要があるかも
     {
         Debug.Log("HandleWeaponStockChanged");
         if (playerNumber == 1)
         {
-            player1StockArea.UpdatePlayerStockArea(shellStock);
+            player1StockArea.UpdatePlayerStockArea(shellStock, mineStock);
         }
         else if (playerNumber == 2)
         {
-            player2StockArea.UpdatePlayerStockArea(shellStock);
+            player2StockArea.UpdatePlayerStockArea(shellStock, mineStock);
         }
     }
     private void SetHUDVisibility(bool isVisible)
@@ -76,8 +76,8 @@ public class HudManager : MonoBehaviour
     }
     private void FirstHoldState() //最初の弾数を表示する
     {
-        player1StockArea.UpdatePlayerStockArea(firstHold);
-        player2StockArea.UpdatePlayerStockArea(firstHold);   
+        player1StockArea.UpdatePlayerStockArea(firstHold, new WeaponStockData(0, 3, 1));
+        player2StockArea.UpdatePlayerStockArea(firstHold, new WeaponStockData(0, 3, 1));   
     }
     // Start is called before the first frame update
     void Start()
